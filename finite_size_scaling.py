@@ -15,8 +15,9 @@ ps = np.linspace(float(start), float(stop), int(num), endpoint=True)
 S = np.loadtxt(path / 'S.np').T
 
 fig, ax = plt.subplots()
-for L, temp in zip(Ls, S):
-    ax.plot(ps, temp, label=r'$L = {0:d}$'.format(L))
+for L, chi in zip(Ls, S):
+    ax.plot(abs(ps - 0.59) * L, chi * L**(7 / 4),
+            label=r'$L = {0:d}$'.format(L))
 
 ax.grid()
 ax.set(xlabel='Probability $p$',
