@@ -30,7 +30,6 @@ def line_to_list(line):
 
     else:
         temp = line.split(',')
-        print(temp)
         sizes = [int(x) for x in temp[:-1]]
         sizes.append(int(temp[-1][:-1]))
 

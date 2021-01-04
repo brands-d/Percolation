@@ -26,6 +26,9 @@ def timeit(func):
 
 
 def get_susceptibility(data, L):
+    if len(data) == 0:
+        return np.nan
+
     sizes = np.array(list(set(data)))
     L_2 = L**2
     n_s = []
