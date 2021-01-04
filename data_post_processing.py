@@ -52,7 +52,7 @@ def process_file(file_name, L):
 
 
 if __name__ == '__main__':
-    path = Path('./output')
+    path = Path('./output/04.01.2021')
 
     # Find all output files
     files = [file for file in os.listdir(path) if file.endswith('.txt')]
@@ -64,4 +64,4 @@ if __name__ == '__main__':
             file_name = path / 'L_{0:d}_p_{1:.3f}.txt'.format(L, p)
             S[j, i] = process_file(file_name, L)
 
-    print(S)
+    np.savetxt(path / 'S.np', S)
