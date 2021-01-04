@@ -29,6 +29,12 @@ def get_susceptibility(data, L):
     if len(data) == 0:
         return np.nan
 
+    else:
+        if data[-1] == 1:
+            del data[-1]
+        else:
+            data[-1] -= 1
+
     sizes = np.array(list(set(data)))
     L_2 = L**2
     n_s = []
