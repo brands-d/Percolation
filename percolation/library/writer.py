@@ -15,4 +15,7 @@ class Writer():
                 for s in sizes[:-1]:
                     file.write('{0:d},'.format(s))
 
-                file.write('{0:d}\n'.format(sizes[-1]))
+                if len(sizes) != 0:
+                    file.write('{0:d}\n'.format(sizes[-1]))
+                else:
+                    file.write('\n')
