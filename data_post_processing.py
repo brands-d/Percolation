@@ -45,7 +45,7 @@ def process_file(file_name, L):
                 sizes = line_to_list(line)
                 S.append(get_susceptibility(sizes, L))
 
-        return np.mean(S)
+        return np.mean(S), np.std(S) / np.sqrt(len(S))
 
     except FileNotFoundError:
         return np.nan
@@ -58,10 +58,11 @@ if __name__ == '__main__':
     files = [file for file in os.listdir(path) if file.endswith('.txt')]
     Ls, ps = get_parameters(files)
     S = np.empty(shape=(len(ps), len(Ls)), dtype=np.float_) * np.nan
-
+    S_sigma = np.empty(shape=S.shape, dtype=np.float_)
     for i, L in enumerate(Ls):
         for j, p in enumerate(ps):
             file_name = path / 'L_{0:d}_p_{1:.3f}.txt'.format(L, p)
-            S[j, i] = process_file(file_name, L)
+            S[j, i], S_sigma[j, i] = process_file(file_name, L)
 
     np.savetxt(path / 'S.np', S)
+    np.savetxt(path / 'S_sigma.np', S_sigma)

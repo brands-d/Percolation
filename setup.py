@@ -10,7 +10,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=True,
-    install_requires=['numpy>=1.19.0, matplotlib>=3.3.3'],
+    install_requires=['numpy>=1.19.0, matplotlib>=3.3.3', 'lmfit>=1.0.1'],
     python_requires='>=3.9.0',
     name='Percolation',
     version=__version__,
