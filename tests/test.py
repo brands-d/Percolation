@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 N, M = 250, 250
-grid = Grid((N, M), periodic=True)
+grid = Grid((N, M))
 hk = HoshenKopelman(grid)
 P_infty = []
 num = 10

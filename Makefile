@@ -13,9 +13,6 @@ uninstall:
 	rm -rf venv build dist *.egg-info
 	find . -type d -name '__pycache__' -exec rm -r {} +
 
-run:
-	python -m percolation
-
 test-all:
 	python -m unittest discover
 

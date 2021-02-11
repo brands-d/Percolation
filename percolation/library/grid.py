@@ -5,184 +5,184 @@ from numpy.random import choice
 
 class Grid:
 
-    def __init__(self, shape, periodic=False):
+    def __init__(self, shape):
         """
-        This class encapsulates the grid (lattice) and provides simple methods
-        for the outside to use.
+        This class encapsulates a regular 2D-square grid (lattice) with
+        periodic boundary conditions in each direction.
 
         :param shape: Shape of the grid as a list of two ints. First int is the
                       number of rows, second number of columns.
-        :param periodic: Whether the grid is periodic or not.
         """
 
-        self.shape = shape
-        self.periodic = periodic
-        # The percolation state of each site in the grid (flattened)
-        self.config = np.zeros(self.size, dtype=np.bool_)
+        # The percolation state of each site in the grid
+        self.config = np.zeros(shape, dtype=np.bool_)
 
     @property
     def size(self):
         """
         Returns the number of points on the lattice.
 
-        :return: Size of the lattice.
+        :return int: Size of the lattice.
         """
 
-        return self.N * self.M
+        return self.config.size
+
+    @property
+    def shape(self):
+        """
+        Returns the shape of the lattice.
+
+        :return int, int: Shape of the square lattice (row, column).
+        """
+
+        return self.config.shape
 
     @property
     def N(self):
         """
-        Returns the number of columns in the lattice.
-
-        :return: Number of columns.
-        """
-
-        return self.shape[1]
-
-    @property
-    def M(self):
-        """
         Returns the number of rows in the lattice.
 
-        :return: Number of rows.
+        :return int: Number of rows.
         """
 
         return self.shape[0]
 
-    def __getitem__(self, i):
+    @property
+    def M(self):
         """
-        Returns the state of the ith lattice points.
+        Returns the number of columns in the lattice.
 
-        :param i: Flat index of the site.
-
-        :return: State of the site.
-        """
-
-        return self.config[i]
-
-    def is_top(self, i):
-        """
-        Whether the site i is in the top row of the lattice.
-
-        :param i: Flat index of the site.
-
-        :return: Whether i is in the top row.
+        :return int: Number of columns.
         """
 
-        return i < self.N
+        return self.shape[1]
 
-    def is_left(self, i):
+    def __getitem__(self, coor):
         """
-        Whether the site i is in the left column of the lattice.
+        Returns the state of the lattice point at corr coordinate.
 
-        :param i: Flat index of the site.
+        :param coor: Tuple of two int coordinates x and y.
 
-        :return: Whether i is in the left column.
-        """
-
-        return i % self.N == 0
-
-    def is_bottom(self, i):
-        """
-        Whether the site i is in the bottom row of the lattice.
-
-        :param i: Flat index of the site.
-
-        :return: Whether i is in the bottom row.
+        :return bool: State of the site.
         """
 
-        return i >= self.N * (self.M - 1)
+        return self.config[coor]
 
-    def is_right(self, i):
+    def is_top(self, x, y):
         """
-        Whether the site i is in the right column of the lattice.
+        Returns  whether the site at (x,y) is in the top row.
 
-        :param i: Flat index of the site.
+        :param x: Row index of the site.
+        :param y: Column index of the site.
 
-        :return: Whether i is in the right column.
-        """
-
-        return (i + 1) % self.N == 0
-
-    def get_top_neighbour(self, i):
-        """
-        Returns the top neighbour of the site i or nan if not possible.
-
-        :param i: Flat index of the site.
-
-        :return: Flat index of the top neighbour.
+        :return bool: Whether (x,y) is in the top row.
         """
 
-        if self.is_top(i):
-            if self.periodic:
-                return i + self.N * (self.M - 1)
-            else:
-                return np.nan
-        else:
-            return i - self.N
+        return True if x == 0 else False
 
-    def get_left_neighbour(self, idx):
+    def is_left(self, x, y):
         """
-         Returns the left neighbour of the site i or nan if not possible.
+        Returns  whether the site at (x,y) is in the left column.
 
-         :param i: Flat index of the site.
+        :param x: Row index of the site.
+        :param y: Column index of the site.
 
-         :return: Flat index of the left neighbour.
+        :return bool: Whether (x,y) is in the left column.
+        """
+
+        return True if y == 0 else False
+
+    def is_bottom(self, x, y):
+        """
+        Returns  whether the site at (x,y) is in the bottom row.
+
+        :param x: Row index of the site.
+        :param y: Column index of the site.
+
+        :return bool: Whether (x,y) is in the bottom row.
+        """
+
+        return True if x == (self.N - 1) else False
+
+    def is_right(self, x, y):
+        """
+        Returns  whether the site at (x,y) is in the right column.
+
+        :param x: Row index of the site.
+        :param y: Column index of the site.
+
+        :return bool: Whether (x,y) is in the right column.
+        """
+
+        return True if y == (self.M - 1) else False
+
+    def get_top_neighbour(self, x, y):
+        """
+        Returns the top neighbour of the lattice site (x,y).
+
+        :param x: Row index of the original site.
+        :param y: Column index of the original site.
+
+        :return int, int: (x,y) coordinate of the top neighbour.
+        """
+
+        x = x - 1 if x > 0 else self.N - 1
+
+        return x, y
+
+    def get_left_neighbour(self, x, y):
+        """
+        Returns the left neighbour of the lattice site (x,y).
+
+        :param x: Row index of the original site.
+        :param y: Column index of the original site.
+
+        :return int, int: (x,y) coordinate of the left neighbour.
+        """
+
+        y = y - 1 if y > 0 else self.M - 1
+
+        return x, y
+
+    def get_bottom_neighbour(self, x, y):
+        """
+        Returns the bottom neighbour of the lattice site (x,y).
+
+        :param x: Row index of the original site.
+        :param y: Column index of the original site.
+
+        :return int, int: (x,y) coordinate of the bottom neighbour.
+        """
+
+        x = (x + 1) % self.N
+
+        return x, y
+
+    def get_right_neighbour(self, x, y):
+        """
+         Returns the right neighbour of the lattice site (x,y).
+
+         :param x: Row index of the original site.
+         :param y: Column index of the original site.
+
+         :return int, int: (x,y) coordinate of the right neighbour.
          """
 
-        if self.is_left(idx):
-            if self.periodic:
-                return idx + (self.N - 1)
-            else:
-                return np.nan
-        else:
-            return idx - 1
+        y = (y + 1) % self.M
 
-    def get_bottom_neighbour(self, idx):
-        """
-         Returns the bottom neighbour of the site i or nan if not possible.
-
-         :param i: Flat index of the site.
-
-         :return: Flat index of the bottom neighbour.
-         """
-
-        if self.is_bottom(idx):
-            if self.periodic:
-                return idx - self.N * (self.M - 1)
-            else:
-                return np.nan
-        else:
-            return idx + self.N
-
-    def get_right_neighbour(self, i):
-        """
-         Returns the right neighbour of the site i or nan if not possible.
-
-         :param i: Flat index of the site.
-
-         :return: Flat index of the right neighbour.
-         """
-
-        if self.is_right(i):
-            if self.periodic:
-                return i - (self.N - 1)
-            else:
-                return np.nan
-        else:
-            return i + 1
+        return x, y
 
     def randomize(self, p=0.5):
         """
         Randomizes the configuration with a probability p for each site to be
         occupied.
 
-        :param p: Probability for each site to be occupied (0 <= p <= 1)
+        :param p: Probability for each site to be occupied (0 <= p <= 1).
 
-        :return: None
+        :return None:
         """
 
-        choices = [True, False]
-        self.config = choice(choices, size=self.size, replace=True,
-                             p=[p, 1 - p])
+        choices = (True, False)
+        prob = (p, 1 - p)
+        self.config = choice(choices, size=self.shape, replace=True,
+                             p=prob)

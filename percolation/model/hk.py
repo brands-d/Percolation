@@ -2,7 +2,7 @@
 import numpy as np
 
 # Own Imports
-from ..library.misc import OneIndexedList
+from ..library.oneindexedlist import OneIndexedList
 
 
 class HoshenKopelman:
@@ -12,7 +12,8 @@ class HoshenKopelman:
         This class encapsulates the cluster finding and labelling via the
         Hoshen-Kopelman algorithm.
 
-        :param grid: Has to be a subclass of ..library.grid.
+        :param grid: Grid to be classified. Has to be a subclass of
+                     ..library.grid.
         """
 
         self.grid = grid
@@ -22,7 +23,7 @@ class HoshenKopelman:
         Sets the class up for a run. Can be called after changing the grid
         again such that you do not need multiple instances of this class.
 
-        :return: None
+        :return None:
         """
 
         # labels is flat array the size of grid. Contains the cluster label for
@@ -32,51 +33,52 @@ class HoshenKopelman:
         # Highest cluster label number in use so far. First cluster will be
         # labelled 1
         self.largest_label = 0
-        # A empty list (OneIndexedList is a custom subclass of list with a
-        # starting index of 1 instead of 0 to better suit the problem) that
-        # will contain the size of each cluster or the reference to its root
-        # cluster
+        # An empty list (starting index is 1 not 0!) that will contain the
+        # size of each cluster or the reference to its root cluster
         self.sizes = OneIndexedList()
 
     def run(self):
         """
         Starts the algorithm, classifies all lattice sites and returns the
-        labels as well as sizes for each site/cluster.
+        labels as well as sizes for each cluster.
 
-        :return: labels, sizes: The labels array containing the labels for each
-                                lattice site (or 0 for unoccupied ones) and the
-                                sizes for each cluster label as list.
+        :return list, list: The first list contains the labels for each
+                            lattice site (or 0 for unoccupied ones).
+                            The second list contains the size for each label.
         """
 
         # Go through all lattice sites individually, starting from the top
-        # left row major
+        # left (row major).
         for i in range(self.grid.size):
             self.classify(i)
 
         self.compactify_cluster()
+
         return self.labels, self.sizes
 
     def classify(self, i):
         """
-        Classifies (i.e. labels) the site with the (flat) index i.
+        Classifies (i.e. labels) i-th site.
 
-        :param i: Flat index of the site to be labeled.
+        :param i: Flatted index of the site which is to be classified.
 
-        :return: None
+        :return None:
         """
 
-        if not self.grid[i]:
+        x, y = np.unravel_index(i, self.grid.shape)
+
+        if not self.grid[x, y]:
             # ==> lattice site is not occupied --> do nothing
             return
 
         # ==> lattice site is occupied
         # Get neighbour to the top and to the left of the site
-        top = self.grid.get_top_neighbour(i)
-        left = self.grid.get_left_neighbour(i)
+        top = self.grid.get_top_neighbour(x, y)
+        left = self.grid.get_left_neighbour(x, y)
 
-        if not self.grid.is_top(i) and self.grid[top]:
+        if not self.grid.is_top(x, y) and self.grid[top]:
             # ==> site is not in the top row and its top neighbour is occupied
-            if not self.grid.is_left(i) and self.grid[left]:
+            if not self.grid.is_left(x, y) and self.grid[left]:
                 # ==> site is not in the left most column and the neighbour to
                 # the left is occupied ==> both neighbours are occupied and
                 # are part of a cluster already --> get their root labels
@@ -106,7 +108,7 @@ class HoshenKopelman:
                 self.labels[i] = L
                 self.sizes[L] += 1
 
-        elif not self.grid.is_left(i) and self.grid[left]:
+        elif not self.grid.is_left(x, y) and self.grid[left]:
             # ==> only the left neighbour is occupied --> site gets part of
             # this cluster
             L = self.find(left)
@@ -120,44 +122,57 @@ class HoshenKopelman:
             # Add this new cluster to the list of clusters (sizes)
             self.sizes.append(1)
 
-        if self.grid.periodic and self.grid.is_right(i):
-            # ==> grid is periodic and this site is in the right column
-            right = self.grid.get_right_neighbour(i)
+        if self.grid.is_right(x, y):
+            # ==> this site is in the right column
+            right = self.grid.get_right_neighbour(x, y)
             if self.grid[right]:
                 # ==> the site in the left column (this sites right neighbour)
                 # is occupied and thus already in a cluster. Combine the two
                 # clusters (similar to above)
                 right_root = self.find(right)
-                self_root = self.find(i)
+                self_root = self.find(x, y)
                 if self_root != right_root:
                     roots = np.sort((right_root, self_root))
                     self.union(*roots)
 
-        if self.grid.periodic and self.grid.is_bottom(i):
-            # ==> grid is periodic and this site is in the bottom row
-            bottom = self.grid.get_bottom_neighbour(i)
+        if self.grid.is_bottom(x, y):
+            # ==> site is in the bottom row
+            bottom = self.grid.get_bottom_neighbour(x, y)
             if self.grid[bottom]:
                 # ==> site in top row is occupied --> unify the two clusters
                 # (see above)
                 bottom_root = self.find(bottom)
-                self_root = self.find(i)
+                self_root = self.find(x, y)
                 if self_root != bottom_root:
                     roots = np.sort((bottom_root, self_root))
                     self.union(*roots)
 
-    def find(self, i, label=False):
+    def find(self, x, y):
         """
-        Finds the label of the root cluster the lattice site i is part of.
+        Finds the label of the root cluster the lattice site at (x,y)
+        is part of.
 
-        :param i: Flat index of the lattice site which root is to be found.
-        :param label: Boolean whether i is an index of a lattice site or
-                      already a label of a (possibly non root) cluster.
+        :param x: Row index of the site.
+        :param y: Column index of the site.
 
-        :return: Root label.
+        :return int: Root label.
         """
 
-        # Get the label of the lattice site if i is not a label
-        l = i if label else self.labels[i]
+        i = np.ravel_multi_index((x, y), self.grid.shape)
+        # Get the label of the lattice site
+        l = self.labels[i]
+
+        return self.find_by_label(l)
+
+    def find_by_label(self, l):
+        """
+        Finds the root label of the label l.
+
+        :param l: Label.
+
+        :return int: Root label.
+        """
+
         # If the size of the cluster label (which is also the index of the
         # cluster in the size array) is negative, then it's absolute value is
         # its root cluster (which in turn could have a root cluster => while)
@@ -174,7 +189,7 @@ class HoshenKopelman:
         :param l_i: Label of the first cluster (root cluster).
         :param l_j: Label of the second cluster (non root cluster).
 
-        :return: None
+        :return None:
         """
 
         # Add the size of the non root cluster to the root clusters size
@@ -189,7 +204,7 @@ class HoshenKopelman:
         clusters. Combines all clusters with their root clusters and relabels
         them if necessary.
 
-        :return: None
+        :return None:
         """
 
         # aux holds the proper (desired) cluster labelling (i.e. no gaps)
@@ -198,7 +213,7 @@ class HoshenKopelman:
         for l, size in zip(range(1, len(self.sizes) + 1), self.sizes):
             if size < 0:
                 # ==> this cluster is not a root cluster
-                root = self.find(l, label=True)
+                root = self.find_by_label(l)
                 # Rename all occurrences of this cluster label to the root
                 # cluster label
                 self.labels[self.labels == l] = root

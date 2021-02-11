@@ -4,14 +4,6 @@ import numpy as np
 from numpy.random import randint
 
 
-class OneIndexedList(list):
-    def __getitem__(self, i):
-        return super().__getitem__(i - 1)
-
-    def __setitem__(self, i, value):
-        return super().__setitem__(i - 1, value)
-
-
 def timeit(func):
     def wrapper(*args, **kwargs):
         start_time = time.time()
@@ -49,6 +41,6 @@ def get_susceptibility(data, L):
 def get_two_point_correlation(labels, L, rs):
     labels = labels.reshape(L, L)
     zero_i, zero_j = np.unravel_index(randint(0, len(labels)), shape=(L, L))
-    X,Y = np.meshgrid
+    X, Y = np.meshgrid
     print(labels)
     return [1]
