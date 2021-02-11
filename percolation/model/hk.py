@@ -82,8 +82,8 @@ class HoshenKopelman:
                 # ==> site is not in the left most column and the neighbour to
                 # the left is occupied ==> both neighbours are occupied and
                 # are part of a cluster already --> get their root labels
-                top_root = self.find(top)
-                left_root = self.find(left)
+                top_root = self.find(*top)
+                left_root = self.find(*left)
 
                 if top_root != left_root:
                     # ==> they are not part of the same cluster already
@@ -104,14 +104,14 @@ class HoshenKopelman:
             else:
                 # ==> only the top neighbour is occupied --> site gets part of
                 # this cluster
-                L = self.find(top)
+                L = self.find(*top)
                 self.labels[i] = L
                 self.sizes[L] += 1
 
         elif not self.grid.is_left(x, y) and self.grid[left]:
             # ==> only the left neighbour is occupied --> site gets part of
             # this cluster
-            L = self.find(left)
+            L = self.find(*left)
             self.labels[i] = L
             self.sizes[L] += 1
 
@@ -129,7 +129,7 @@ class HoshenKopelman:
                 # ==> the site in the left column (this sites right neighbour)
                 # is occupied and thus already in a cluster. Combine the two
                 # clusters (similar to above)
-                right_root = self.find(right)
+                right_root = self.find(*right)
                 self_root = self.find(x, y)
                 if self_root != right_root:
                     roots = np.sort((right_root, self_root))
@@ -141,7 +141,7 @@ class HoshenKopelman:
             if self.grid[bottom]:
                 # ==> site in top row is occupied --> unify the two clusters
                 # (see above)
-                bottom_root = self.find(bottom)
+                bottom_root = self.find(*bottom)
                 self_root = self.find(x, y)
                 if self_root != bottom_root:
                     roots = np.sort((bottom_root, self_root))
@@ -202,13 +202,12 @@ class HoshenKopelman:
         """
         'Cleans' the labels and sizes arrays. Both still contain non root
         clusters. Combines all clusters with their root clusters and relabels
-        them if necessary.
+        them if necessary. Sets sizes array to a regular list!
 
         :return None:
         """
 
-        # aux holds the proper (desired) cluster labelling (i.e. no gaps)
-        aux = 1
+        # Firstly, change all labels to their root labels
         # Go through all clusters. l is its improper label, size its size
         for l, size in zip(range(1, len(self.sizes) + 1), self.sizes):
             if size < 0:
@@ -218,14 +217,15 @@ class HoshenKopelman:
                 # cluster label
                 self.labels[self.labels == l] = root
 
-            elif l != aux:
-                # ==> this cluster is root but not labelled properly --> rename
-                self.labels[self.labels == l] = aux
-                aux += 1
+        # Secondly, relabel clusters to remove gaps in the cluster numbering
+        # aux holds the proper (desired) cluster labelling (i.e. no gaps)
+        aux = 1
+        for l, size in zip(range(1, len(self.sizes) + 1), self.sizes):
+            if size < 0:
+                continue
 
-            else:
-                # ==> cluster is correctly labelled
-                aux += 1
+            self.labels[self.labels == l] = aux
+            aux += 1
 
         # Clean sizes array by only keeping non negative entries (i.e. roots)
         self.sizes = [l for l in self.sizes if l > 0]

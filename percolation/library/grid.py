@@ -1,6 +1,7 @@
 # Third Party Imports
 import numpy as np
 from numpy.random import choice
+import matplotlib.pyplot as plt
 
 
 class Grid:
@@ -186,3 +187,25 @@ class Grid:
         prob = (p, 1 - p)
         self.config = choice(choices, size=self.shape, replace=True,
                              p=prob)
+
+    def plot(self, ax=None, labels=None):
+        if ax is None:
+            fig, ax = plt.subplots()
+
+        im = ax.imshow(self.config, cmap='seismic', vmax=2, vmin=-1)
+
+        if labels is not None:
+            labels = labels.reshape(self.shape)
+            for x in range(self.N):
+                for y in range(self.M):
+                    ax.text(y, x, labels[x, y], ha='center', va='center',
+                            color='k')
+
+        ax.set_xticks(list(range(self.M)))
+        ax.set_yticks(list(range(self.N)))
+        ax.set_xticklabels(list(range(self.M)))
+        ax.set_yticklabels(list(range(self.N)))
+
+        fig.tight_layout()
+
+        return ax

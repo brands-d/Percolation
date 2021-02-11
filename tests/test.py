@@ -1,25 +1,37 @@
-from percolation.library.grid import Grid
-from percolation.model.hk import HoshenKopelman
 import numpy as np
 import matplotlib.pyplot as plt
 
-N, M = 250, 250
+from percolation.library.grid import Grid
+from percolation.model.hk import HoshenKopelman
+
+N, M, p = 10,10, 0.38
 grid = Grid((N, M))
+grid.randomize(p)
 hk = HoshenKopelman(grid)
-P_infty = []
-num = 10
-ps = np.array(range(40, 60,2)) / 100
+hk.setup()
+labels, sizes = hk.run()
+grid.plot(labels=labels)
 
-for p in ps:
-    print(p)
-    temp = []
-    for i in range(num):
-        grid.randomize(p)
-        hk.setup()
-        _, sizes = hk.run()
-        temp.append(max(sizes) / grid.size)
+for i in range(len(sizes)):
+    print(i + 1, ': ', sizes[i])
 
-    P_infty.append(np.mean(temp))
-
-plt.plot(ps, P_infty)
 plt.show()
+
+#
+# P_infty = []
+# num = 10
+# ps = np.array(range(40, 60, 2)) / 100
+#
+# for p in ps:
+#     print(p)
+#     temp = []
+#     for i in range(num):
+#         grid.randomize(p)
+#         hk.setup()
+#         _, sizes = hk.run()
+#         temp.append(max(sizes) / grid.size)
+#
+#     P_infty.append(np.mean(temp))
+#
+# plt.plot(ps, P_infty)
+# plt.show()
