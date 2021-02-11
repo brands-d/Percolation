@@ -38,7 +38,7 @@ def residual(params, S, Ls, ps):
 
     residual = []
     for combo in combinations(range(len(Ls)), 2):
-        temp = (y_new[combo[0]] - y_new[combo[1]])**2
+        temp = abs(y_new[combo[0]] - y_new[combo[1]])
         residual.append(temp)
 
     return np.nansum(residual, axis=0)

@@ -7,7 +7,7 @@ from multiprocessing import Pool
 import numpy as np
 
 from percolation.library.grid import Grid
-from percolation.library.writer import Writer
+from percolation.library.writer import CritWriter
 from percolation.library.misc import timeit
 from percolation.model.hk import HoshenKopelman
 
@@ -37,7 +37,7 @@ def calc():
     for L in Ls:
         for p in ps:
             with Pool(processors, initializer=init,
-                      initargs=(Writer(path),)) as pool:
+                      initargs=(CritWriter(path),)) as pool:
                 pool.map(func, num * [[L, p]])
 
             # compress('L_{0:d}_p_{1:.3f}'.format(L, p))
