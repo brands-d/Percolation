@@ -1,10 +1,14 @@
 import time
 
 import numpy as np
-from numpy.random import randint
 
 
 def timeit(func):
+    """
+    Simple wrapper to time a function. Prints the execution time after the
+    method finishes.
+    """
+
     def wrapper(*args, **kwargs):
         start_time = time.time()
         result = func(*args, **kwargs)
@@ -18,29 +22,34 @@ def timeit(func):
     return wrapper
 
 
-def get_susceptibility(data, L):
-    if len(data) == 0:
-        return np.nan
+def manhattan_distance(shape, center):
+    """
+    Returns the distance for each entry in a matrix from the center according
+    to the Manhatten (taxicab) metric and periodic boundary conditions.
 
-    else:
-        data.remove(max(data))
+    :param shape: Shape of the matrix. Row first.
+    :param center: Which entry is the origin. Starting from top left, first
+                   component is the row, second the column.
 
-    sizes = np.array(list(set(data)))
-    L_2 = L**2
-    n_s = []
+    :return ndarray: 2D ndarray with shape entered. Each entry has its shortest
+                     distance from the entered center. Only integers since
+                     as metrix the Manhatten metric is used.
+    """
 
-    for size in sizes:
-        n_s.append(data.count(size) / L_2)
+    x0, y0 = center
+    N, M = shape
 
-    temp = sizes * n_s
-    S = np.sum(sizes * temp) / np.sum(temp)
+    # Calculate distance in x direction
+    dx = np.abs(np.arange(N) - x0)
+    # If distance is too large going the other way (periodic boundary) is
+    # shorter
+    dx[dx > N / 2] = N - dx[dx > N / 2]
 
-    return S
+    # Same in the y direction
+    dy = np.abs(np.arange(M) - y0)
+    dy[dy > M / 2] = M - dy[dy > M / 2]
 
+    # Add the distances (like a meshgrid)
+    r = dy + np.array([dx]).T
 
-def get_two_point_correlation(labels, L, rs):
-    labels = labels.reshape(L, L)
-    zero_i, zero_j = np.unravel_index(randint(0, len(labels)), shape=(L, L))
-    X, Y = np.meshgrid
-    print(labels)
-    return [1]
+    return r

@@ -3,6 +3,7 @@ import numpy as np
 
 # Own Imports
 from ..library.oneindexedlist import OneIndexedList
+from ..library.misc import timeit
 
 
 class HoshenKopelman:
@@ -54,7 +55,7 @@ class HoshenKopelman:
 
         self.compactify_cluster()
 
-        return self.labels, self.sizes
+        return self.labels.reshape(self.grid.shape), self.sizes
 
     def classify(self, i):
         """

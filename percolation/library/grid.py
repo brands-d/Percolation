@@ -195,7 +195,6 @@ class Grid:
         im = ax.imshow(self.config, cmap='seismic', vmax=2, vmin=-1)
 
         if labels is not None:
-            labels = labels.reshape(self.shape)
             for x in range(self.N):
                 for y in range(self.M):
                     ax.text(y, x, labels[x, y], ha='center', va='center',
