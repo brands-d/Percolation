@@ -51,7 +51,7 @@ def get_p_inf(clusters, shape):
         return max(clusters) / (shape[0] * shape[1])
 
 
-def get_connectivity(config):
+def get_connectivity(config, inf_cluster):
     """
     Returns connectivity (two point correlation function) in dependence of the
     distance.
@@ -70,7 +70,7 @@ def get_connectivity(config):
     max_r = int(np.floor(N / 2) + np.floor(M / 2))
     # Count of how many sites at distance r are in the same cluster. The first
     # two entries are 1 because they don't need to be calculated
-    count = np.array([1] + [1] + [0] * (max_r - 1), dtype=np.int_)
+    count = np.array([1] + [1] + [0] * (max_r - 1), dtype=np.float_)
     # Count of how many occupied sites at distance exist regardless of cluster.
     # First two entries are 1 because they don't need to be calculated
     norm = np.array([1] + [1] + [0] * (max_r - 1), dtype=np.float_)
@@ -79,7 +79,7 @@ def get_connectivity(config):
     for x in range(N):
         for y in range(M):
             # If the site is not occupied ignore
-            if config[x, y] == 0:
+            if config[x, y] == 0 or config[x, y] == inf_cluster:
                 continue
 
             # Calculate the distances from the site
@@ -107,4 +107,6 @@ def get_connectivity(config):
                     else:
                         cluster_edge_reached = True
 
-    return count / norm
+    mask = norm != 0
+    count[mask] = count[mask] / norm[mask]
+    return count

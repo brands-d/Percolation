@@ -2,22 +2,56 @@ from itertools import combinations
 
 import numpy as np
 from scipy.interpolate import interp1d
-from lmfit import minimize, Parameters
+from lmfit import minimize, Parameters, fit_report
 
 
-def ffs(S, Ls, ps):
+def fss(S, Ls, ps, vary_exponents=False):
+    """
+    Estimates the critical exponents gamma and nu as well as the critical
+    threshold pc via finite size scaling.
+
+    :param S: A matrix with len(Ls) rows and len(ps) columns. Each entry is the
+              susceptibility for the system with the corresponding size L and
+              occupation probability p.
+    :param Ls: List of integers denoting the system sizes the rows of S
+               correspond to.
+    :param ps: List of floats denoting the probabilities for the columns of S.
+    :param vary_exponents: Boolean whether to vary and find optimal critical
+                           exponents or fixate them at the "true" value.
+    :return MinimizerResult: Minimizing result from lmfit with the estimated
+                             critical exponents and probability threshold.
+    """
+
     params = Parameters()
-    params.add('pc', value=0.59)
-    params.add('gamma', value=43 / 18)
-    params.add('nu', value=4 / 3)
+    params.add('pc', value=0.5927)
+    params.add('gamma', value=43 / 18, vary=vary_exponents)
+    params.add('nu', value=4 / 3, vary=vary_exponents)
 
-    return minimize(residual, params, args=(S, Ls, ps))
+    out = minimize(residual, params, args=(S, Ls, ps))
+
+    return out
 
 
 def residual(params, S, Ls, ps):
-    pc = params['pc']
-    nu = params['nu']
-    gamma = params['gamma']
+    """
+     Residual method for the finite size scaling.
+
+     :param params: A lmfit parameter set with a critical exponent nu, gamma
+                    and the critical threshold pc.
+     :param S: A matrix with len(Ls) rows and len(ps) columns. Each entry is the
+              susceptibility for the system with the corresponding size L and
+              occupation probability p.
+     :param Ls: List of integers denoting the system sizes the rows of S
+               correspond to.
+     :param ps: List of floats denoting the probabilities for the columns of S.
+
+     :return list: Array with the sum of the pair wise absolute differences
+                   between all data series.
+     """
+
+    pc = params['pc'].value
+    nu = params['nu'].value
+    gamma = params['gamma'].value
 
     x = []
     y = []
@@ -45,8 +79,30 @@ def residual(params, S, Ls, ps):
 
 
 def scale_p(p, L, pc, nu):
+    """
+     Scales the probability p according to finite size scaling.
+
+     :param p: List of values p to be scaled.
+     :param L: System size.
+     :param pc: Critical threshold.
+     :param nu: Critical exponent.
+
+     :return list: Scaled probabilites.
+     """
+
     return (p - pc) * L**(1 / nu)
 
 
 def scale_chi(chi, L, nu, gamma):
+    """
+     Scales the susceptibility chi according to finite size scaling.
+
+     :param chi: List of values chi to be scaled.
+     :param L: System size.
+     :param nu: Critical exponent.
+     :param gamma: Critical exponent.
+
+     :return list: Scaled probabilites.
+     """
+
     return chi / L**(gamma / nu)

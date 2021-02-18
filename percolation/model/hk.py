@@ -31,9 +31,6 @@ class HoshenKopelman:
         # each lattice site. If site is not occupied or not yet attributed to
         # a cluster the label will be 0
         self.labels = np.zeros(self.grid.size, dtype=np.int_)
-        # Highest cluster label number in use so far. First cluster will be
-        # labelled 1
-        self.largest_label = 0
         # An empty list (starting index is 1 not 0!) that will contain the
         # size of each cluster or the reference to its root cluster
         self.sizes = OneIndexedList()
@@ -118,10 +115,9 @@ class HoshenKopelman:
 
         else:
             # ==> neither neighbour is occupied --> new cluster
-            self.largest_label += 1
-            self.labels[i] = self.largest_label
             # Add this new cluster to the list of clusters (sizes)
             self.sizes.append(1)
+            self.labels[i] = len(self.sizes)
 
         if self.grid.is_right(x, y):
             # ==> this site is in the right column
