@@ -134,3 +134,5 @@ dmypy.json
 output/*
 *.png
 *.mp4
+*.png
+tests/*
